@@ -1,5 +1,7 @@
 package com.example.enocaDemo.service;
 
+import com.example.enocaDemo.dto.CartDto;
+import com.example.enocaDemo.dto.CustomerDto;
 import com.example.enocaDemo.model.Cart;
 import com.example.enocaDemo.model.CartItem;
 import com.example.enocaDemo.model.Customer;
@@ -8,11 +10,14 @@ import com.example.enocaDemo.repository.CartItemRepository;
 import com.example.enocaDemo.repository.CartRepository;
 import com.example.enocaDemo.repository.CustomerRepository;
 import com.example.enocaDemo.repository.ProductRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLOutput;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CartService {
@@ -22,15 +27,21 @@ public class CartService {
     private ProductRepository productRepository;
     @Autowired
     private CartItemRepository cartItemRepository;
+    @Autowired
+    private ModelMapper modelMapper;
 
-    public Cart getCart(Long cartId) {
-        return cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
+    public CartDto getCart(Long cartId) {
+        Cart cart= cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
+        return modelMapper.map(cart,CartDto.class);
     }
-    public List<Cart> getAllCart(){
-        return cartRepository.findAll();
+    public List<CartDto> getAllCart(){
+         List<Cart> carts= cartRepository.findAll();
+         return carts.stream()
+                 .map(cart -> modelMapper.map(cart, CartDto.class))
+                 .collect(Collectors.toList());
     }
 
-    public void addProductToCard(Long cartId, Long productId) {
+    public CartDto addProductToCard(Long cartId, Long productId) {
         Cart cart = cartRepository.findById(cartId
         ).orElseThrow(() -> new RuntimeException("Cart not found"));
         Product product = productRepository.findById(productId)
@@ -49,9 +60,11 @@ public class CartService {
         cartItem.setQuantity(cartItem.getQuantity()+1);
         cartItemRepository.save(cartItem);
 
+        return modelMapper.map(cart,CartDto.class);
+
     }
 
-    public void removeProductToCard(Long cartId, Long productId) {
+    public CartDto removeProductToCard(Long cartId, Long productId) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
         CartItem cartItem = cart.getItems().stream().
@@ -66,9 +79,10 @@ public class CartService {
             }
         }
         cartRepository.save(cart);
+        return modelMapper.map(cart,CartDto.class);
     }
 
-    public void updateCartItem(Long cartId, Long productId, int quantity) {
+    public CartDto updateCartItem(Long cartId, Long productId, int quantity) {
         Cart cart = cartRepository.findById(cartId).
                 orElseThrow(() -> new RuntimeException("Cart not found"));
         CartItem cartItem = cart.getItems().stream().
@@ -89,9 +103,11 @@ public class CartService {
         product.setStock(product.getStock() - quantityDifference);
         productRepository.save(product);
 
+        return modelMapper.map(cart,CartDto.class);
+
     }
 
-    public void emptyCart(Long cartId) {
+    public CartDto emptyCart(Long cartId) {
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
 
         //Sepeti boşalttığımızda rünleri geri stoğa ekiyoruz.
@@ -102,6 +118,8 @@ public class CartService {
         }
 
         cart.getItems().clear();
+        return modelMapper.map(cart,CartDto.class);
+
     }
     public void createCart(Cart cart){
         cartRepository.save(cart);

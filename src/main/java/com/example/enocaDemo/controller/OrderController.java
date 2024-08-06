@@ -1,5 +1,6 @@
 package com.example.enocaDemo.controller;
 
+import com.example.enocaDemo.dto.OrderDto;
 import com.example.enocaDemo.model.Order;
 import com.example.enocaDemo.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,17 +15,17 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping("/place/{cartId}")
-   public Order placeOrder(@PathVariable Long cartId){
+   public OrderDto placeOrder(@PathVariable Long cartId){
         return orderService.placeOrder(cartId);
     }
     @GetMapping("/{orderId}")
-    public Order getOrderForCode(@PathVariable Long orderId){
+    public OrderDto getOrderForCode(@PathVariable Long orderId){
         return orderService.getOrderForCode(orderId);
     }
 
     @GetMapping("/customer/{customerId}")
-    public List<Order> getAllOrdersForCustomer(@PathVariable Long customerId){
-        List<Order> orders=orderService.getAllOrdersForCustomer(customerId);
+    public List<OrderDto> getAllOrdersForCustomer(@PathVariable Long customerId){
+        List<OrderDto> orders=orderService.getAllOrdersForCustomer(customerId);
         return orders;
     }
 }

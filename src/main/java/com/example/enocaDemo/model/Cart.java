@@ -14,11 +14,12 @@ import java.util.List;
 @Table(name = "cart")
 public class Cart extends BaseEntity {
 
-    @ManyToOne
+    @OneToOne
+    @JoinColumn(name = "customer_id")
     @JsonBackReference
     private Customer customer;
 
-    @OneToMany(mappedBy = "cart",orphanRemoval = true)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<CartItem> items;
 

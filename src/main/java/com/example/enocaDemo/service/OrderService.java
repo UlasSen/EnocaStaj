@@ -1,11 +1,16 @@
 package com.example.enocaDemo.service;
 
+import com.example.enocaDemo.dto.CustomerDto;
+import com.example.enocaDemo.dto.OrderDto;
+import com.example.enocaDemo.dto.OrderItemDto;
 import com.example.enocaDemo.model.*;
 import com.example.enocaDemo.repository.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -25,10 +30,12 @@ public class OrderService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
-    public Order placeOrder(Long cartId) {
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public OrderDto placeOrder(Long cartId) {
         // Sepeti al ve geçerli olup olmadığını kontrol et
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new RuntimeException("Cart not found"));
-
 
         // Yeni bir sipariş oluştur
         Order order = new Order();
@@ -57,15 +64,19 @@ public class OrderService {
         cart.setTotalPrice(0.0);
         cartRepository.save(cart);
 
-        return order;
+        return modelMapper.map(order,OrderDto.class);
     }
 
-    public Order getOrderForCode(Long orderId) {
-        return orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Not found"));
+    public OrderDto getOrderForCode(Long orderId) {
+        Order order= orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Not found"));
+        return modelMapper.map(order,OrderDto.class);
     }
 
-    public List<Order> getAllOrdersForCustomer(Long customerId) {
-        return orderRepository.findByCustomerId(customerId);
+    public List<OrderDto> getAllOrdersForCustomer(Long customerId) {
+        List<Order> orders= orderRepository.findByCustomerId(customerId);
+        return orders.stream()
+                .map(customer -> modelMapper.map(orders, OrderDto.class))
+                .collect(Collectors.toList());
     }
 }
 
